@@ -5,7 +5,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY as string);
 
 function generatePrompt(reportType: string): string {
-  const basePrompt = `You are a friendly medical report analyzer. Analyze this ${reportType} report and provide a detailed yet simple explanation that anyone can understand. For each measurement:
+  const basePrompt = `You are a friendly medical report analyzer. Analyze this ${reportType} report and provide a detailed yet simple explanation that anyone can understand. Also note that the important reminder is already mentioned in the website so please do not generate any precautionary reminders. For each measurement:
 
 1. Show the value with its unit
 2. Explain what it means in very simple, friendly terms (like explaining to a friend)
