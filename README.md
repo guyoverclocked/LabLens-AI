@@ -1,0 +1,2 @@
+# LabLens AI
+ LabLens AI is a user-friendly platform that simplifies medical test reports using advanced AI technology. It decodes complex medical jargon, provides actionable health insights, and offers personalized recommendations on diet and lifestyle changes, all while supporting multiple regional languages. With a focus on accessibility and privacy, LabLens empowers users to understand and take control of their health effortlessly.
