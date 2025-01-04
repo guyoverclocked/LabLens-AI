@@ -28,7 +28,7 @@ To run LabLens AI locally, follow these steps:
 
 1. Clone the repository:
 ```
-git clone https://github.com/yourusername/lablens-ai.git
+git clone https://github.com/guyoverclocked/LabLens-AI
 cd lablens-ai
 ```
 2. Install dependencies:
