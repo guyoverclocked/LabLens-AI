@@ -192,6 +192,16 @@ function processGeminiOutput(output: string): ProcessedResult {
   return cleanedResult;
 }
 
+export const runtime = 'edge';
+
+export const config = {
+  api: {
+    bodyParser: false,
+    responseLimit: '50mb',
+    maxDuration: 60, // Seconds
+  },
+};
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -205,21 +215,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      return NextResponse.json(
+        { error: 'File size exceeds 10MB limit' },
+        { status: 400 }
+      );
+    }
+
     const fileBuffer = await file.arrayBuffer();
     const fileBytes = new Uint8Array(fileBuffer);
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-thinking-exp-1219" });
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash-thinking-exp-1219",
+      generationConfig: {
+        maxOutputTokens: 2048,
+        temperature: 0.4,
+      },
+    });
+
     const prompt = generatePrompt(reportType);
 
     try {
-      const result = await model.generateContent([
-        prompt,
-        {
-          inlineData: {
-            mimeType: file.type,
-            data: Buffer.from(fileBytes).toString('base64')
+      const result = await Promise.race([
+        model.generateContent([
+          prompt,
+          {
+            inlineData: {
+              mimeType: file.type,
+              data: Buffer.from(fileBytes).toString('base64')
+            }
           }
-        }
+        ]),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('API timeout')), 50000)
+        )
       ]);
 
       const response = await result.response;
@@ -246,9 +275,4 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
 
