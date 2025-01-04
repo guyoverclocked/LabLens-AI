@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, GenerateContentResult } from '@google/generative-ai';
 
 // Initialize the Google Generative AI with your API key
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY as string);
@@ -192,16 +192,6 @@ function processGeminiOutput(output: string): ProcessedResult {
   return cleanedResult;
 }
 
-export const runtime = 'edge';
-
-export const config = {
-  api: {
-    bodyParser: false,
-    responseLimit: '50mb',
-    maxDuration: 60, // Seconds
-  },
-};
-
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -215,24 +205,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
-      return NextResponse.json(
-        { error: 'File size exceeds 10MB limit' },
-        { status: 400 }
-      );
-    }
-
     const fileBuffer = await file.arrayBuffer();
     const fileBytes = new Uint8Array(fileBuffer);
 
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.0-flash-thinking-exp-1219",
-      generationConfig: {
-        maxOutputTokens: 2048,
-        temperature: 0.4,
-      },
-    });
-
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-thinking-exp-1219" });
     const prompt = generatePrompt(reportType);
 
     try {
@@ -249,7 +225,7 @@ export async function POST(request: NextRequest) {
         new Promise((_, reject) => 
           setTimeout(() => reject(new Error('API timeout')), 50000)
         )
-      ]);
+      ]) as GenerateContentResult;
 
       const response = await result.response;
       const processedResult = processGeminiOutput(response.text());
@@ -275,4 +251,9 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
