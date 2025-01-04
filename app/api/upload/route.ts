@@ -5,7 +5,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY as string);
 
 function generatePrompt(reportType: string): string {
-  const basePrompt = `You are a friendly medical report analyzer. Analyze this ${reportType} report and provide a detailed yet simple explanation that anyone can understand. Also note that the important reminder is already mentioned in the website so please do not generate any precautionary reminders. Also don't use the phrase  "I need to" or "I should" or anything like thatin the tips. For each measurement:
+  const basePrompt = `You are a friendly medical report analyzer. Analyze this ${reportType} report and provide a detailed yet simple explanation that anyone can understand. Also note that the important reminder is already mentioned in the website so please do not generate any precautionary reminders. For each measurement:
 
 1. Show the value with its unit
 2. Explain what it means in very simple, friendly terms (like explaining to a friend)
@@ -40,7 +40,11 @@ Lifestyle Tips:
 - [Specific tip 2]
 - [Specific tip 3]
 - [Specific tip 4]
----`;
+---
+Also you don't have to say anything like: "Ensure the formatting is exactly as requested.Here's a friendly look at your report"
+Just print the report in the format requested.
+Also don't say anything like "Here's a plan"
+`;
 
   switch (reportType) {
     case 'cholesterol':
@@ -57,8 +61,7 @@ Lifestyle Tips:
       Focus on:
       - Fasting Glucose (blood sugar after fasting)
       - HbA1c (average blood sugar over 2-3 months)
-      - Other relevant metrics
-      - Also note that the important reminder is already mentioned in the website so please do not generate any precautionary reminders.`;
+      - Other relevant metrics`;
     case 'thyroid':
       return `${basePrompt}
       Focus on:
@@ -94,15 +97,15 @@ Lifestyle Tips:
 interface Measurement {
   name: string;
   value: string;
-  meaning: string;
-  normalRange: string;
+  meaning?: string;
+  normalRange?: string;
   status: 'Good' | 'Okay' | 'Needs Attention';
   tips?: string[];
 }
 
 interface ProcessedResult {
   measurements: Measurement[];
-  summary: string;
+  summary?: string;
   lifestyleTips: string[];
 }
 
@@ -167,11 +170,26 @@ function processGeminiOutput(output: string): ProcessedResult {
     }
   }
 
-  return {
-    measurements,
-    summary: summary || 'Analysis summary not available.',
-    lifestyleTips: lifestyleTips.length > 0 ? lifestyleTips : ['Maintain a balanced diet', 'Exercise regularly', 'Get regular check-ups']
+  // Before sending the response, clean up empty values
+  const cleanedMeasurements = measurements.map(measurement => ({
+    ...measurement,
+    meaning: measurement.meaning?.trim() || undefined,
+    normalRange: measurement.normalRange?.trim() || undefined,
+    tips: measurement.tips?.filter(tip => tip.trim()) || undefined
+  })).filter(measurement => 
+    measurement.value || 
+    measurement.meaning || 
+    measurement.normalRange || 
+    (measurement.tips && measurement.tips.length)
+  );
+
+  const cleanedResult = {
+    measurements: cleanedMeasurements,
+    summary: summary?.trim() || undefined,
+    lifestyleTips: lifestyleTips?.filter(tip => tip.trim()) || []
   };
+
+  return cleanedResult;
 }
 
 export async function POST(request: NextRequest) {
