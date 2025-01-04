@@ -17,8 +17,8 @@ export default function Footer() {
             </div>
             <div className="w-full md:w-1/3">
               <h4 className="text-lg font-semibold mb-2">Contact Us</h4>
-              <p className="text-gray-400">Email: info@lablens.com</p>
-              <p className="text-gray-400">Phone: +1 (555) 123-4567</p>
+              <p className="text-gray-400">Email: nambirajan52006@gmail.com</p>
+             
             </div>
           </div>
           <div className="border-t border-gray-700 mt-8 pt-6 text-center">
