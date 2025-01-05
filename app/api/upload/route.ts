@@ -119,8 +119,15 @@ interface ProcessedResult {
 function processGeminiOutput(output: string): ProcessedResult | { error: string } {
   // Check for invalid report first
   if (output.includes('INVALID_REPORT:')) {
+    // Clean up the error message by removing markdown symbols and dashes
+    const errorMessage = output
+      .split('INVALID_REPORT:')[1]
+      .replace(/[`-]/g, '')  // Remove backticks and dashes
+      .replace(/\s+/g, ' ')  // Replace multiple spaces with single space
+      .trim();
+    
     return {
-      error: output.split('INVALID_REPORT:')[1].trim()
+      error: errorMessage
     };
   }
 
