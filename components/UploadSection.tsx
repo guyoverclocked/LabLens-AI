@@ -46,19 +46,20 @@ export default function UploadSection({ setResult }: UploadSectionProps) {
       })
       const data = await response.json()
       
-      if (data.error) {
+      if (data.isInvalidReport) {
         setError(data.error)
-      } else if (data.result) {
-        setResult(data.result)
-        // Reset form after successful submission
-        setFile(null)
-        setReportType('')
-        // Reset the file input
-        const fileInput = document.getElementById('file-input') as HTMLInputElement
-        if (fileInput) fileInput.value = ''
-      } else {
-        setError('Unexpected response format from server')
+        // Handle invalid report UI
+        return
       }
+      
+      // Handle valid report
+      setResult(data.result)
+      // Reset form after successful submission
+      setFile(null)
+      setReportType('')
+      // Reset the file input
+      const fileInput = document.getElementById('file-input') as HTMLInputElement
+      if (fileInput) fileInput.value = ''
     } catch (error) {
       console.error('Error:', error)
       setError('An error occurred while uploading the file. Please try again.')

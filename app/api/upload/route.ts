@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI, GenerateContentResult } from '@google/generative-ai';
 
-// Initialize the Google Generative AI with your API key
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY as string);
 
 function generatePrompt(reportType: string): string {
-  const basePrompt = `You are a friendly medical report analyzer. Analyze this ${reportType} report and provide a detailed yet simple explanation that anyone can understand. Also note that the important reminder is already mentioned in the website so please do not generate any precautionary reminders. For each measurement:
+  const basePrompt = `You are a medical report analyzer. First, verify if the provided image is a valid medical report. 
+
+If it's NOT a valid medical report, respond exactly with:
+---
+INVALID_REPORT: This does not appear to be a valid medical report. Please upload a clear image of a medical laboratory report.
+---
+
+If it IS a valid medical report, analyze it and provide a detailed yet simple explanation in this format:
+
+You are a friendly medical report analyzer. Analyze this ${reportType} report and provide a detailed yet simple explanation that anyone can understand. Also note that the important reminder is already mentioned in the website so please do not generate any precautionary reminders. For each measurement:
 
 1. Show the value with its unit
 2. Explain what it means in very simple, friendly terms (like explaining to a friend)
@@ -43,8 +51,7 @@ Lifestyle Tips:
 ---
 Also you don't have to say anything like: "Ensure the formatting is exactly as requested.Here's a friendly look at your report"
 Just print the report in the format requested.
-Also don't say anything like "Here's a plan"
-`;
+Also don't say anything like "Here's a plan"`;
 
   switch (reportType) {
     case 'cholesterol':
@@ -109,7 +116,14 @@ interface ProcessedResult {
   lifestyleTips: string[];
 }
 
-function processGeminiOutput(output: string): ProcessedResult {
+function processGeminiOutput(output: string): ProcessedResult | { error: string } {
+  // Check for invalid report first
+  if (output.includes('INVALID_REPORT:')) {
+    return {
+      error: output.split('INVALID_REPORT:')[1].trim()
+    };
+  }
+
   const sections = output.split('---').filter(s => s.trim());
   const measurements: Measurement[] = [];
   let summary = '';
@@ -229,6 +243,14 @@ export async function POST(request: NextRequest) {
 
       const response = await result.response;
       const processedResult = processGeminiOutput(response.text());
+
+      // Check if result indicates invalid report
+      if ('error' in processedResult) {
+        return NextResponse.json({ 
+          error: processedResult.error,
+          isInvalidReport: true
+        }, { status: 400 });
+      }
 
       return NextResponse.json({ 
         result: processedResult,
