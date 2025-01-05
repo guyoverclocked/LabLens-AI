@@ -11,6 +11,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
     "@tailwindcss/typography": "^0.5.15",
+    "@vercel/analytics": "^1.1.2",
     "lucide-react": "^0.469.0",
     "multiparty": "^4.2.3",
     "next": "15.1.3",
