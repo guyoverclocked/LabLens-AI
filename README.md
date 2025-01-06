@@ -6,6 +6,8 @@ You're not alone. Millions struggle to understand their health reports, leaving 
 
 Enter LabLens AI – Your personal medical report interpreter.
 
+### 🚀 Preview site is LIVE: lablens.vercel.app
+
 ## 🤖 What is LabLens AI?
 
 LabLens AI is a cutting-edge web application that uses artificial intelligence to simplify and explain your medical test reports. Whether it's a blood test, cholesterol check, or any other diagnostic report, LabLens AI breaks down the complexity into easy-to-understand language, empowering you to take control of your health journey.
