@@ -6,7 +6,7 @@ You're not alone. Millions struggle to understand their health reports, leaving 
 
 Enter LabLens AI – Your personal medical report interpreter.
 
-### 🚀 Preview site is LIVE: lablens.vercel.app
+### 🚀 Preview site is LIVE: [lablens.vercel.app]Check it out!
 
 ## 🤖 What is LabLens AI?
 
